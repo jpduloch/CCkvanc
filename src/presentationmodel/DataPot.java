@@ -12,8 +12,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
+
 
 /**
  * Created by jp on 11.03.2017.
@@ -27,6 +29,7 @@ public class DataPot {
     private StringProperty discoveryString;
     private StringProperty username;
     private StringProperty history;
+
 
     public DataPot() {
         initializeValues();
@@ -102,8 +105,10 @@ public class DataPot {
         this.history.set(history);
     }
 
+
     public void appendToHistory(String appen) {
-        String temp = new StringBuilder().append(getHistory() != null ? getHistory() : "").append(appen).append("\n").toString();
+        String[] fn = appen.split("\"");
+        String temp = new StringBuilder().append(getHistory() != null ? getHistory() : "").append(fn[13]).append("\n").toString();
         this.history.set(temp);
     }
 
@@ -143,7 +148,10 @@ public class DataPot {
     public void sendTextMessage(String ip, String message) {
         try {
             InetAddress addr = InetAddress.getByName(ip);
-            airmessage(addr, this.getMessagePort(), message);
+            Long epoc = Instant.now().toEpochMilli();
+            //“{"from":"<username>","timestamp":"<epoch>","message":{"text":"Mitteilung"}}
+            String mess = "{\"from\":\""+username.getValue()+"\",\"timestamp\":\""+epoc.toString()+"\",\"message\":{\"text\":\""+message+"\"}}" ;
+            airmessage(addr, this.getMessagePort(), mess);
             Platform.runLater(() -> this.appendToHistory(message));
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -186,6 +194,7 @@ public class DataPot {
     }
 
     public ObservableList<users> getOnlineClients() {
+
         return onlineClients;
     }
 }
